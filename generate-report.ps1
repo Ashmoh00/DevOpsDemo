@@ -2,7 +2,6 @@
 
 $date = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
 
-# محتوى التقرير بصيغة HTML
 $html = @"
 <!DOCTYPE html>
 <html>
@@ -28,5 +27,4 @@ $html = @"
 </html>
 "@
 
-# يحفظ الملف باسم report.html
 $html | Set-Content -Path report.html
