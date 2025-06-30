@@ -23,3 +23,7 @@ jobs:
           git add report.md
           git commit -m "📄 Updated report from GitHub Action"
           git push
+        env:
+           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
