@@ -1,0 +1,25 @@
+name: Generate Report
+
+on:
+  push:
+    paths:
+      - 'generate-report.ps1'
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Run PowerShell script to generate report
+        run: pwsh ./generate-report.ps1
+
+      - name: Commit report
+        run: |
+          git config --global user.name "Ashjan"
+          git config --global user.email "ashjan@example.com"
+          git add report.md
+          git commit -m "📄 Updated report from GitHub Action"
+          git push
