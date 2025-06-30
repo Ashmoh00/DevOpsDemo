@@ -4,7 +4,7 @@ $report = @"
 
 ✅ Script ran successfully on $date
 
-- Logs processed: 11
+- Logs processed: 10
 - Status: OK
 
 ---
