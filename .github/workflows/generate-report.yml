@@ -23,4 +23,5 @@ jobs:
           git config --global user.email "ashjan@example.com"
           git add report.md
           git commit -m "📄 Updated report from GitHub Action (scheduled)"
+          git pull --rebase
           git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/Ashmoh00/DevOpsDemo.git HEAD:main
