@@ -1,10 +1,9 @@
-name: Generate Report on Schedule
+name: Generate HTML Report on Schedule
 
-# 📌 يشغل السكربت تلقائي كل يوم الساعة 7 صباحًا (UTC)
 on:
   schedule:
     - cron: '0 7 * * *'
-  workflow_dispatch:  # يسمح لك تشغيله يدويًا من تبويب Actions
+  workflow_dispatch:
 
 jobs:
   build:
@@ -14,14 +13,14 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Run PowerShell script to generate report
+      - name: Run PowerShell script to generate HTML report
         run: pwsh ./generate-report.ps1
 
-      - name: Commit and push report
+      - name: Commit and push HTML report
         run: |
           git config --global user.name "Ashjan"
           git config --global user.email "ashjan@example.com"
-          git add report.md
-          git commit -m "📄 Updated report from GitHub Action (scheduled)"
+          git add report.html
+          git commit -m "📄 Updated HTML report from GitHub Action"
           git pull --rebase
           git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/Ashmoh00/DevOpsDemo.git HEAD:main
