@@ -1,9 +1,10 @@
-name: Generate Report
+name: Generate Report on Schedule
 
+# ✅ هذا التريجر يشغّل الـ workflow تلقائيًا كل يوم الساعة 7 صباحًا UTC
 on:
-  push:
-    paths:
-      - 'generate-report.ps1'
+  schedule:
+    - cron: '0 7 * * *'
+  workflow_dispatch:  # يسمح لك تشغيله يدويًا من Actions لو حابة تختبرينه
 
 jobs:
   build:
@@ -21,9 +22,5 @@ jobs:
           git config --global user.name "Ashjan"
           git config --global user.email "ashjan@example.com"
           git add report.md
-          git commit -m "📄 Updated report from GitHub Action"
-          git push
-        env:
-           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-
+          git commit -m "📄 Updated report from GitHub Action (scheduled)"
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/Ashmoh00/DevOpsDemo.git HEAD:main
