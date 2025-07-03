@@ -1,4 +1,4 @@
-name: Generate HTML Report and Upload Artifact
+name: Generate HTML Report and Send Email
 
 on:
   workflow_dispatch:
@@ -22,3 +22,34 @@ jobs:
         with:
           name: daily-report
           path: report.html
+
+  send_mail:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: daily-report
+
+      - name: Show downloaded files (Debug)
+        run: ls -la
+
+      - name: Send Email with report
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: "✅ Daily HTML Report"
+          to: your-receiver@example.com
+          from: ${{ secrets.EMAIL_USERNAME }}
+          content_type: text/html
+          attachments: report.html
+          body: |
+            Hello 👋,<br/>
+            Please find the attached daily HTML report.<br/><br/>
+            ✔️ Generated automatically by GitHub Actions.<br/>
+            🔗 Have a nice day!
