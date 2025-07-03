@@ -1,8 +1,6 @@
 name: Generate HTML Report and Upload Artifact
 
 on:
-  schedule:
-    - cron: '0 7 * * *'  # كل يوم الساعة 7 صباحًا UTC
   workflow_dispatch:
 
 jobs:
@@ -15,6 +13,9 @@ jobs:
 
       - name: Run PowerShell script to generate HTML report
         run: pwsh ./generate-report.ps1
+
+      - name: List files in workspace (Debug)
+        run: dir
 
       - name: Upload HTML report as Artifact
         uses: actions/upload-artifact@v4
