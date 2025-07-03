@@ -6,6 +6,7 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
@@ -20,8 +21,9 @@ jobs:
           path: report.html
 
   send_mail:
-    needs: build  # مهم جدًا!
+    needs: build  # هذا مهم جدًا لتشغيل Job الإرسال بعد الـ build
     runs-on: ubuntu-latest
+
     steps:
       - name: Download Artifact
         uses: actions/download-artifact@v4
@@ -30,6 +32,9 @@ jobs:
 
       - name: Show downloaded files (Debug)
         run: ls -la
+
+      - name: Debug message
+        run: echo "✅ send_mail job is running!"
 
       - name: Send email with SendGrid
         uses: peter-evans/sendgrid-action@v1
