@@ -36,20 +36,20 @@ jobs:
       - name: Show downloaded files (Debug)
         run: ls -la
 
-      - name: Send Email with report
-        uses: dawidd6/action-send-mail@v3
+      - name: Send email with SendGrid
+        uses: peter-evans/sendgrid-action@v1
         with:
-          server_address: smtp.gmail.com
-          server_port: 465
-          username: ${{ secrets.EMAIL_USERNAME }}
-          password: ${{ secrets.EMAIL_PASSWORD }}
-          subject: "✅ Daily HTML Report"
-          to: your-receiver@example.com
-          from: ${{ secrets.EMAIL_USERNAME }}
-          content_type: text/html
-          attachments: report.html
+          sendgrid-api-key: ${{ secrets.SENDGRID_API_KEY }}
+          from: yourname@example.com
+          to: recipient@example.com
+          subject: "✅ Daily HTML Report Ready!"
           body: |
-            Hello 👋,<br/>
-            Please find the attached daily HTML report.<br/><br/>
-            ✔️ Generated automatically by GitHub Actions.<br/>
-            🔗 Have a nice day!
+            Hi Team! 👋
+
+            The daily HTML report is ready.
+            Check the attached report or artifact.
+
+            🚀 Regards,
+            DevOps Bot
+
+          attachments: report.html
