@@ -6,16 +6,12 @@ on:
 jobs:
   build:
     runs-on: windows-latest
-
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
 
       - name: Run PowerShell script to generate HTML report
         run: pwsh ./generate-report.ps1
-
-      - name: List files in workspace (Debug)
-        run: dir
 
       - name: Upload HTML report as Artifact
         uses: actions/upload-artifact@v4
@@ -24,9 +20,8 @@ jobs:
           path: report.html
 
   send_mail:
-    needs: build
+    needs: build  # مهم جدًا!
     runs-on: ubuntu-latest
-
     steps:
       - name: Download Artifact
         uses: actions/download-artifact@v4
@@ -47,7 +42,7 @@ jobs:
             Hi Team! 👋
 
             The daily HTML report is ready.
-            Check the attached report or artifact.
+            Check the attached report.
 
             🚀 Regards,
             DevOps Bot
