@@ -40,8 +40,8 @@ jobs:
         uses: peter-evans/sendgrid-action@v1
         with:
           sendgrid-api-key: ${{ secrets.SENDGRID_API_KEY }}
-          from: yourname@example.com
-          to: recipient@example.com
+          from: Ashjan.aljbreen@gmail.com
+          to: ashjannnnnnn@gmail.com
           subject: "✅ Daily HTML Report Ready!"
           body: |
             Hi Team! 👋
