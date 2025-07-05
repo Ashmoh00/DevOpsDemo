@@ -53,3 +53,5 @@ jobs:
             DevOps Bot
 
           attachments: report.html
+          fail_on_error: true   # <<< هنا أضفها تحت مع الـ with
+
