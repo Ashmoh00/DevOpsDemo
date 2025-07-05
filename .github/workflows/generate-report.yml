@@ -28,7 +28,7 @@ jobs:
         with:
           name: daily-report
 
-      - name: Debug list files
+      - name: Show downloaded files
         run: ls -la
 
       - name: Send email with SendGrid
