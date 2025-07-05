@@ -1,51 +1,26 @@
-name: Generate PDF Report and Send Email
+name: Send PDF via SendGrid
 
 on:
   workflow_dispatch:
 
 jobs:
-  build:
-    runs-on: windows-latest
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
-
-      - name: Generate PDF Report (PowerShell)
-        run: |
-          # تحتاجين توليد PDF بطرق متعددة،
-          # هذا مثال بسيط باستخدام Out-File لنص عادي بصيغة PDF (مثال توضيحي)
-          echo "This is your PDF report content!" | Out-File -FilePath report.pdf -Encoding utf8
-
-      - name: Upload PDF report as Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: daily-report
-          path: report.pdf
-
-      - name: Encode PDF report to Base64
-        id: encode
-        run: |
-          base64 report.pdf | tr -d '\n' > encoded.txt
-          echo "ENCODED=$(cat encoded.txt)" >> $GITHUB_ENV
-
   send_mail:
-    needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Download PDF Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: daily-report
+      - name: Create simple PDF file (fake)
+        run: |
+          echo "This is your PDF Report" > report.txt
+          sudo apt-get update && sudo apt-get install -y enscript ghostscript
+          enscript report.txt -o - | ps2pdf - report.pdf
+          ls -lh report.pdf
 
-      - name: Show downloaded files (Debug)
-        run: ls -la
-
-      - name: Encode PDF again (if needed)
+      - name: Encode PDF to Base64
         run: |
           base64 report.pdf | tr -d '\n' > encoded.txt
+          cat encoded.txt
           echo "ENCODED=$(cat encoded.txt)" >> $GITHUB_ENV
 
-      - name: Send email with SendGrid API (cURL)
+      - name: Send PDF via SendGrid
         env:
           SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
         run: |
@@ -56,12 +31,12 @@ jobs:
             --data "{
               \"personalizations\": [{
                 \"to\": [{ \"email\": \"ashjan.aljbreen@gmail.com\" }],
-                \"subject\": \"✅ Daily PDF Report Ready!\"
+                \"subject\": \"✅ TEST PDF Report\"
               }],
               \"from\": { \"email\": \"ashjannnnnnn@gmail.com\" },
               \"content\": [{
                 \"type\": \"text/plain\",
-                \"value\": \"Hi Team! 👋 Please find the attached PDF report.\"
+                \"value\": \"Please find attached PDF.\"
               }],
               \"attachments\": [{
                 \"content\": \"${ENCODED}\",
