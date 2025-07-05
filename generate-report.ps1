@@ -3,7 +3,7 @@
 # ============================================
 
 # تأكد إن الملف في نفس المسار أو عدّل المسار لو حاب
-$csvFile = "./AdventureWorks Sales Data 2020.csv"
+$csvFile = "DevOpsDemo/AdventureWorks Sales Data 2020.csv"
 if (-Not (Test-Path $csvFile)) {
     Write-Host "❌ CSV file not found at $csvFile"
     exit 1
