@@ -11,52 +11,51 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Run PowerShell script to generate HTML report
+      - name: Generate HTML report
         run: pwsh ./generate-report.ps1
 
-      - name: Upload HTML report as Artifact
+      - name: Commit and push HTML report
+        run: |
+          git config --global user.name "Ashjan"
+          git config --global user.email "ashjan@example.com"
+          git add report.html
+          git commit -m "✅ Updated HTML report from GitHub Action"
+          git pull --rebase
+          git push https://Ashmoh00:${{ secrets.GITHUB_TOKEN }}@github.com/Ashmoh00/DevOpsDemo.git HEAD:main
+
+      - name: Upload report as artifact
         uses: actions/upload-artifact@v4
         with:
           name: daily-report
           path: report.html
 
   send_mail:
-    needs: build  # يعتمد على الخطوة الأولى
+    needs: build
     runs-on: ubuntu-latest
 
     steps:
-      - name: Download Artifact
+      - name: Download report
         uses: actions/download-artifact@v4
         with:
           name: daily-report
 
-      - name: Show downloaded files (Debug)
+      - name: Show files
         run: ls -la
 
-      - name: Send email using SendGrid API with cURL
+      - name: Send email with SendGrid using cURL
         run: |
           curl --request POST \
             --url https://api.sendgrid.com/v3/mail/send \
             --header "Authorization: Bearer ${{ secrets.SENDGRID_API_KEY }}" \
             --header "Content-Type: application/json" \
             --data '{
-              "personalizations": [
-                {
-                  "to": [
-                    {
-                      "email": "ashjan.aljbreen@gmail.com"
-                    }
-                  ],
-                  "subject": "✅ Daily HTML Report Ready!"
-                }
-              ],
-              "from": {
-                "email": "ashjannnnnnn@gmail.com"
-              },
-              "content": [
-                {
-                  "type": "text/plain",
-                  "value": "Hi Team! 👋\n\nThe daily HTML report is ready.\n\n🚀 Regards,\nDevOps Bot"
-                }
-              ]
+              "personalizations": [{
+                "to": [{"email": "ashjan.aljbreen@gmail.com"}],
+                "subject": "✅ Daily HTML Report"
+              }],
+              "from": {"email": "ashjannnnnnn@gmail.com"},
+              "content": [{
+                "type": "text/plain",
+                "value": "Hi Team,\n\nThe daily HTML report has been generated and pushed.\n\n✅ Regards,\nDevOps Bot"
+              }]
             }'
