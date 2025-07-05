@@ -1,4 +1,4 @@
-name: Generate HTML Report and Send Email
+name: Generate PDF Report and Send Email
 
 on:
   workflow_dispatch:
@@ -6,56 +6,66 @@ on:
 jobs:
   build:
     runs-on: windows-latest
-
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Generate HTML report
-        run: pwsh ./generate-report.ps1
-
-      - name: Commit and push HTML report
+      - name: Generate PDF Report (PowerShell)
         run: |
-          git config --global user.name "Ashjan"
-          git config --global user.email "ashjan@example.com"
-          git add report.html
-          git commit -m "✅ Updated HTML report from GitHub Action"
-          git pull --rebase
-          git push https://Ashmoh00:${{ secrets.GITHUB_TOKEN }}@github.com/Ashmoh00/DevOpsDemo.git HEAD:main
+          # تحتاجين توليد PDF بطرق متعددة،
+          # هذا مثال بسيط باستخدام Out-File لنص عادي بصيغة PDF (مثال توضيحي)
+          echo "This is your PDF report content!" | Out-File -FilePath report.pdf -Encoding utf8
 
-      - name: Upload report as artifact
+      - name: Upload PDF report as Artifact
         uses: actions/upload-artifact@v4
         with:
           name: daily-report
-          path: report.html
+          path: report.pdf
+
+      - name: Encode PDF report to Base64
+        id: encode
+        run: |
+          base64 report.pdf | tr -d '\n' > encoded.txt
+          echo "ENCODED=$(cat encoded.txt)" >> $GITHUB_ENV
 
   send_mail:
     needs: build
     runs-on: ubuntu-latest
-
     steps:
-      - name: Download report
+      - name: Download PDF Artifact
         uses: actions/download-artifact@v4
         with:
           name: daily-report
 
-      - name: Show files
+      - name: Show downloaded files (Debug)
         run: ls -la
 
-      - name: Send email with SendGrid using cURL
+      - name: Encode PDF again (if needed)
+        run: |
+          base64 report.pdf | tr -d '\n' > encoded.txt
+          echo "ENCODED=$(cat encoded.txt)" >> $GITHUB_ENV
+
+      - name: Send email with SendGrid API (cURL)
+        env:
+          SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
         run: |
           curl --request POST \
             --url https://api.sendgrid.com/v3/mail/send \
-            --header "Authorization: Bearer ${{ secrets.SENDGRID_API_KEY }}" \
+            --header "Authorization: Bearer $SENDGRID_API_KEY" \
             --header "Content-Type: application/json" \
-            --data '{
-              "personalizations": [{
-                "to": [{"email": "ashjan.aljbreen@gmail.com"}],
-                "subject": "✅ Daily HTML Report"
+            --data "{
+              \"personalizations\": [{
+                \"to\": [{ \"email\": \"ashjan.aljbreen@gmail.com\" }],
+                \"subject\": \"✅ Daily PDF Report Ready!\"
               }],
-              "from": {"email": "ashjannnnnnn@gmail.com"},
-              "content": [{
-                "type": "text/plain",
-                "value": "Hi Team,\n\nThe daily HTML report has been generated and pushed.\n\n✅ Regards,\nDevOps Bot"
+              \"from\": { \"email\": \"ashjannnnnnn@gmail.com\" },
+              \"content\": [{
+                \"type\": \"text/plain\",
+                \"value\": \"Hi Team! 👋 Please find the attached PDF report.\"
+              }],
+              \"attachments\": [{
+                \"content\": \"${ENCODED}\",
+                \"type\": \"application/pdf\",
+                \"filename\": \"report.pdf\"
               }]
-            }'
+            }"
