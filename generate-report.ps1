@@ -2,44 +2,83 @@
 # generate-report.ps1
 # ================================
 
-# Import required modules
-Import-Module ImportExcel -ErrorAction Stop
+Write-Host "🚀 Starting Sales Report Script..."
 
-# Paths
+# ======================================
+# 1) مسار ملف البيانات
+# ======================================
 $CsvPath = "AdventureWorks_Sales_Data_2020.csv"
-$OutputPath = "report.pdf"
 
-# Get today's date in 2020
+if (-Not (Test-Path $CsvPath)) {
+    Write-Host "❌ CSV file not found: $CsvPath"
+    exit 1
+}
+
+# ======================================
+# 2) قراءة البيانات
+# ======================================
+$data = Import-Csv $CsvPath
+
+Write-Host "📄 First 5 rows in CSV:"
+$data | Select-Object -First 5 | Format-Table
+
+# ======================================
+# 3) التاريخ المستهدف (اليوم مع سنة 2020)
+# ======================================
 $today = Get-Date
 $filterDate = Get-Date -Year 2020 -Month $today.Month -Day $today.Day
 
-Write-Host "Filtering orders for date: $($filterDate.ToShortDateString())"
+Write-Host "📅 Target date to filter: $($filterDate.ToShortDateString())"
 
-# Read CSV and filter
-$data = Import-Csv $CsvPath | Where-Object {
-    ($_.'OrderDate' -like "$($filterDate.ToString('yyyy-MM-dd'))*")
+# ======================================
+# 4) فلترة البيانات حسب التنسيق MM/dd/yy
+# ======================================
+$filtered = $data | Where-Object {
+    try {
+        $orderDate = [DateTime]::ParseExact($_.OrderDate, 'MM/dd/yy', $null)
+        $orderDate.Month -eq $filterDate.Month -and
+        $orderDate.Day -eq $filterDate.Day -and
+        $orderDate.Year -eq 2020
+    } catch {
+        $false
+    }
 }
 
-if ($data.Count -eq 0) {
-    Write-Host "No orders found for $filterDate"
+Write-Host "✅ Number of rows found: $($filtered.Count)"
+
+if ($filtered.Count -gt 0) {
+    Write-Host "📄 Sample rows:"
+    $filtered | Select-Object -First 5 | Format-Table
 } else {
-    Write-Host "$($data.Count) orders found"
+    Write-Host "⚠️ No rows matched! Please check date format."
 }
 
-# Prepare basic HTML content
+# ======================================
+# 5) توليد HTML من البيانات
+# ======================================
 $html = @"
 <html>
-<head><title>Daily Sales Report</title></head>
+<head>
+  <title>Daily Sales Report</title>
+  <style>
+    table, th, td { border: 1px solid black; border-collapse: collapse; }
+    th, td { padding: 6px; }
+  </style>
+</head>
 <body>
-<h2>Daily Sales Report for $($filterDate.ToShortDateString())</h2>
-<p>Total Orders: $($data.Count)</p>
-<table border='1' cellpadding='5' cellspacing='0'>
-<tr>
-<th>OrderDate</th><th>OrderNumber</th><th>ProductKey</th><th>OrderQuantity</th>
-</tr>
+  <h1>📈 Daily Sales Report</h1>
+  <p><strong>Date Compared:</strong> $($filterDate.ToShortDateString())</p>
+  <p><strong>Total Orders:</strong> $($filtered.Count)</p>
+  <table>
+    <tr>
+      <th>OrderDate</th>
+      <th>OrderNumber</th>
+      <th>ProductKey</th>
+      <th>OrderQuantity</th>
+    </tr>
 "@
 
-foreach ($row in $data) {
+foreach ($row in $filtered) {
     $html += "<tr>"
     $html += "<td>$($row.OrderDate)</td>"
     $html += "<td>$($row.OrderNumber)</td>"
@@ -49,20 +88,29 @@ foreach ($row in $data) {
 }
 
 $html += @"
-</table>
+  </table>
 </body>
 </html>
 "@
 
-# Save HTML temporarily
+# حفظ HTML مؤقت
 $htmlFile = "report.html"
 $html | Out-File -FilePath $htmlFile -Encoding utf8
 
-# Convert HTML to PDF using wkhtmltopdf
-# NOTE: wkhtmltopdf must be in PATH on GitHub Actions runner
-$null = & wkhtmltopdf $htmlFile $OutputPath
+Write-Host "✅ HTML report generated: $htmlFile"
 
-Write-Host "PDF Report generated: $OutputPath"
+# ======================================
+# 6) تحويل HTML إلى PDF
+# ======================================
+# تأكد أن wkhtmltopdf موجود في PATH في Actions أو جهازك المحلي
+$OutputPath = "report.pdf"
+& wkhtmltopdf $htmlFile $OutputPath
 
-# Clean up
+Write-Host "✅ PDF report generated: $OutputPath"
+
+# ======================================
+# 7) تنظيف الملف المؤقت
+# ======================================
 Remove-Item $htmlFile -Force
+
+Write-Host "🎉 All done! Report is ready."
