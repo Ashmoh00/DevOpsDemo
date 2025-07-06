@@ -1,54 +1,54 @@
-name: Generate Sales Report and Send Email
+name: Generate PDF Report and Send Email
 
 on:
-  workflow_dispatch:  # للتشغيل اليدوي
+  workflow_dispatch:  # تشغيل يدوي
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest  # Linux runner
 
     steps:
-    - name: Checkout repo
-      uses: actions/checkout@v3
+      - name: Checkout repo
+        uses: actions/checkout@v3
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
 
-    - name: Install dependencies
-      run: pip install pandas
+      - name: Install Python dependencies
+        run: pip install pandas pdfkit
 
-    - name: Run Python script to generate report
-      run: python generate-report.py
+      - name: Install wkhtmltopdf
+        run: sudo apt-get update && sudo apt-get install -y wkhtmltopdf
 
-    - name: Upload HTML report as artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: daily-sales-report
-        path: report.html
+      - name: Generate PDF Report
+        run: python generate-report.py
+
+      - name: Upload PDF as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: daily-sales-report
+          path: report.pdf
 
   send_email:
     needs: build
     runs-on: ubuntu-latest
+
     steps:
-    - name: Download Artifact
-      uses: actions/download-artifact@v4
-      with:
-        name: daily-sales-report
+      - name: Download PDF artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: daily-sales-report
 
-    - name: Send email with SendGrid
-      uses: peter-evans/sendgrid-action@v1
-      with:
-        sendgrid-api-key: ${{ secrets.SENDGRID_API_KEY }}
-        from: ashjannnnnnn@gmail.com
-        to: Ashjan.aljbreen@gmail.com
-        subject: "✅ Daily Sales Report"
-        body: |
-          Hi Team,
-
-          Please find attached the daily sales report for today vs 2020.
-
-          Regards,
-          DevOps Bot
-        attachments: report.html
+      - name: Send PDF email with SendGrid
+        uses: peter-evans/sendgrid-action@v1
+        with:
+          sendgrid-api-key: ${{ secrets.SENDGRID_API_KEY }}
+          from: youremail@example.com
+          to: recipient@example.com
+          subject: "✅ Daily Sales PDF Report"
+          body: |
+            Hi Team,
+            Please find attached the PDF sales report.
+          attachments: report.pdf
