@@ -2,7 +2,7 @@
 $csvPath = "./AdventureWorks_Sales_Data_2020.csv"
 
 # جلب البيانات حسب التاريخ
-$today = Get-Date -Format "MM/dd/yy"
+$today = Get-Date -Format "MM/dd"
 $filteredData = Import-Csv $csvPath | Where-Object {
     ($_.OrderDate -like "$today*")
 }
