@@ -45,8 +45,8 @@ jobs:
         uses: peter-evans/sendgrid-action@v1
         with:
           sendgrid-api-key: ${{ secrets.SENDGRID_API_KEY }}
-          from: youremail@example.com
-          to: recipient@example.com
+          from: Ashjannnnnnn@gmail.com
+          to: Ashjan.aljbreen@gmail.com
           subject: "✅ Daily Sales PDF Report"
           body: |
             Hi Team,
