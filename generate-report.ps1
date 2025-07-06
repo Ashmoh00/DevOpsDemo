@@ -1,10 +1,11 @@
 $csvPath = "./AdventureWorks_Sales_Data_2020.csv"
 
 # صيغة التاريخ MM/dd/yy
-$today = Get-Date -Format "MM/dd/yy"
+$today = (Get-Date).Date
 
 $filteredData = Import-Csv $csvPath | Where-Object {
-    $_.OrderDate -like "$today*"
+    $orderDate = [datetime]::ParseExact($_.OrderDate, "MM/dd/yy", $null)
+    $orderDate.Date -eq $today
 }
 
 # التحقق إذا فيه بيانات
