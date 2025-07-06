@@ -1,7 +1,9 @@
-name: Generate PDF Sales Report and Send Email
+name: Generate Sales Report and Send Email
 
 on:
-  workflow_dispatch:  # للتشغيل اليدوي من Actions
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * *'  # يعمل كل يوم الساعة 6 صباحًا UTC (عدّل الوقت حسب حاجتك)
 
 jobs:
   build:
@@ -11,19 +13,14 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
+      - name: List files (Debug)
+        run: ls -la
 
-      - name: Install Python dependencies
-        run: pip install pandas pdfkit
+      - name: Install PowerShell
+        uses: microsoft/setup-powershell@v1
 
-      - name: Install wkhtmltopdf
-        run: sudo apt-get update && sudo apt-get install -y wkhtmltopdf
-
-      - name: Run Python script to generate PDF report
-        run: python generate-report.py
+      - name: Generate report
+        run: pwsh ./generate-report.ps1
 
       - name: Upload PDF report as artifact
         uses: actions/upload-artifact@v4
@@ -31,27 +28,30 @@ jobs:
           name: daily-sales-report
           path: report.pdf
 
-  send_email:
+  send_mail:
     needs: build
     runs-on: ubuntu-latest
 
     steps:
-      - name: Download PDF artifact
+      - name: Download PDF report artifact
         uses: actions/download-artifact@v4
         with:
           name: daily-sales-report
+
+      - name: List files (Debug)
+        run: ls -la
 
       - name: Send email with SendGrid
         uses: peter-evans/sendgrid-action@v1
         with:
           sendgrid-api-key: ${{ secrets.SENDGRID_API_KEY }}
           from: ashjannnnnnn@gmail.com
-          to: ashjan.aljbreen@gmail.com
-          subject: "✅ Daily Sales PDF Report"
+          to: Ashjan.aljbreen@gmail.com
+          subject: "✅ Daily Sales Report"
           body: |
             Hi Team,
 
-            Please find attached the daily PDF sales report.
+            Please find attached the daily sales report.
 
             Regards,
             DevOps Bot
