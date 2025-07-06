@@ -1,86 +1,68 @@
-# ============================================
-# 1) Load CSV Sales Data
-# ============================================
+# ================================
+# generate-report.ps1
+# ================================
 
-# تأكد إن الملف في نفس المسار أو عدّل المسار لو حاب
-$csvFile = "DevOpsDemo/AdventureWorks_Sales_Data_2020.csv"
-if (-Not (Test-Path $csvFile)) {
-    Write-Host "❌ CSV file not found at $csvFile"
-    exit 1
-}
+# Import required modules
+Import-Module ImportExcel -ErrorAction Stop
 
-$data = Import-Csv -Path $csvFile
+# Paths
+$CsvPath = "AdventureWorks_Sales_Data_2020.csv"
+$OutputPath = "report.pdf"
 
-# ============================================
-# 2) Get today's date but with 2020 year
-# ============================================
+# Get today's date in 2020
 $today = Get-Date
-$targetDate = Get-Date -Year 2020 -Month $today.Month -Day $today.Day
+$filterDate = Get-Date -Year 2020 -Month $today.Month -Day $today.Day
 
-Write-Host "🔍 Filtering sales data for: $($targetDate.ToShortDateString())"
+Write-Host "Filtering orders for date: $($filterDate.ToShortDateString())"
 
-# ============================================
-# 3) Filter sales for that date
-# ============================================
-
-# ملاحظة: تأكد من اسم العمود OrderDate وصيغته
-$filtered = $data | Where-Object { $_.OrderDate -like "*$($targetDate.ToString('MM/dd/yyyy'))*" }
-
-if ($filtered.Count -eq 0) {
-    Write-Host "⚠️ No data found for this date!"
-} else {
-    Write-Host "✅ Found $($filtered.Count) rows for $($targetDate.ToShortDateString())"
+# Read CSV and filter
+$data = Import-Csv $CsvPath | Where-Object {
+    ($_.'OrderDate' -like "$($filterDate.ToString('yyyy-MM-dd'))*")
 }
 
-# ============================================
-# 4) Calculate total sales
-# ============================================
-$totalSales = ($filtered | Measure-Object -Property SalesAmount -Sum).Sum
-Write-Host "💰 Total Sales: $totalSales"
+if ($data.Count -eq 0) {
+    Write-Host "No orders found for $filterDate"
+} else {
+    Write-Host "$($data.Count) orders found"
+}
 
-# ============================================
-# 5) Generate HTML Report
-# ============================================
-
+# Prepare basic HTML content
 $html = @"
 <html>
-<head>
-  <title>Sales Report</title>
-  <style>
-    table, th, td { border: 1px solid black; border-collapse: collapse; }
-    th, td { padding: 6px; }
-  </style>
-</head>
+<head><title>Daily Sales Report</title></head>
 <body>
-  <h1>📈 AdventureWorks Sales Report</h1>
-  <p><strong>Report Date:</strong> $($targetDate.ToShortDateString())</p>
-  <p><strong>Total Sales:</strong> $$totalSales</p>
-  <h2>Details</h2>
-  <table>
-    <tr>
-      <th>OrderID</th>
-      <th>OrderDate</th>
-      <th>SalesAmount</th>
-    </tr>
+<h2>Daily Sales Report for $($filterDate.ToShortDateString())</h2>
+<p>Total Orders: $($data.Count)</p>
+<table border='1' cellpadding='5' cellspacing='0'>
+<tr>
+<th>OrderDate</th><th>OrderNumber</th><th>ProductKey</th><th>OrderQuantity</th>
+</tr>
 "@
 
-foreach ($row in $filtered) {
-    $html += "<tr><td>$($row.OrderID)</td><td>$($row.OrderDate)</td><td>$($row.SalesAmount)</td></tr>"
+foreach ($row in $data) {
+    $html += "<tr>"
+    $html += "<td>$($row.OrderDate)</td>"
+    $html += "<td>$($row.OrderNumber)</td>"
+    $html += "<td>$($row.ProductKey)</td>"
+    $html += "<td>$($row.OrderQuantity)</td>"
+    $html += "</tr>"
 }
 
 $html += @"
-  </table>
+</table>
 </body>
 </html>
 "@
 
-$html | Out-File -Encoding utf8 "report.html"
-Write-Host "✅ HTML report generated: report.html"
+# Save HTML temporarily
+$htmlFile = "report.html"
+$html | Out-File -FilePath $htmlFile -Encoding utf8
 
-# ============================================
-# 6) Optional: Convert to PDF using wkhtmltopdf
-# ============================================
-# تأكد إن wkhtmltopdf مثبت في جهازك لو بتجرب محلي
-# لو بتشغل في GitHub Actions، تأكد تركب الأداة أول
-# & "C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe" report.html report.pdf
-Write-Host "🚀 Done!"
+# Convert HTML to PDF using wkhtmltopdf
+# NOTE: wkhtmltopdf must be in PATH on GitHub Actions runner
+$null = & wkhtmltopdf $htmlFile $OutputPath
+
+Write-Host "PDF Report generated: $OutputPath"
+
+# Clean up
+Remove-Item $htmlFile -Force
