@@ -1,46 +1,54 @@
-name: Send PDF via SendGrid
+name: Generate Sales Report and Send Email
 
 on:
-  workflow_dispatch:
+  workflow_dispatch:  # للتشغيل اليدوي
 
 jobs:
-  send_mail:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: pip install pandas
+
+    - name: Run Python script to generate report
+      run: python generate-report.py
+
+    - name: Upload HTML report as artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: daily-sales-report
+        path: report.html
+
+  send_email:
+    needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Create simple PDF file (fake)
-        run: |
-          echo "This is your PDF Report" > report.txt
-          sudo apt-get update && sudo apt-get install -y enscript ghostscript
-          enscript report.txt -o - | ps2pdf - report.pdf
-          ls -lh report.pdf
+    - name: Download Artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: daily-sales-report
 
-      - name: Encode PDF to Base64
-        run: |
-          base64 report.pdf | tr -d '\n' > encoded.txt
-          cat encoded.txt
-          echo "ENCODED=$(cat encoded.txt)" >> $GITHUB_ENV
+    - name: Send email with SendGrid
+      uses: peter-evans/sendgrid-action@v1
+      with:
+        sendgrid-api-key: ${{ secrets.SENDGRID_API_KEY }}
+        from: your_email@example.com
+        to: recipient@example.com
+        subject: "✅ Daily Sales Report"
+        body: |
+          Hi Team,
 
-      - name: Send PDF via SendGrid
-        env:
-          SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
-        run: |
-          curl --request POST \
-            --url https://api.sendgrid.com/v3/mail/send \
-            --header "Authorization: Bearer $SENDGRID_API_KEY" \
-            --header "Content-Type: application/json" \
-            --data "{
-              \"personalizations\": [{
-                \"to\": [{ \"email\": \"ashjan.aljbreen@gmail.com\" }],
-                \"subject\": \"✅ TEST PDF Report\"
-              }],
-              \"from\": { \"email\": \"ashjannnnnnn@gmail.com\" },
-              \"content\": [{
-                \"type\": \"text/plain\",
-                \"value\": \"Please find attached PDF.\"
-              }],
-              \"attachments\": [{
-                \"content\": \"${ENCODED}\",
-                \"type\": \"application/pdf\",
-                \"filename\": \"report.pdf\"
-              }]
-            }"
+          Please find attached the daily sales report for today vs 2020.
+
+          Regards,
+          DevOps Bot
+        attachments: report.html
