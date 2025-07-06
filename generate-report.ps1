@@ -4,8 +4,18 @@ $csvPath = "./AdventureWorks_Sales_Data_2020.csv"
 $today = (Get-Date).Date
 
 $filteredData = Import-Csv $csvPath | Where-Object {
-    $orderDate = [datetime]::ParseExact($_.OrderDate, "MM/dd/yy", $null)
-    $orderDate.Date -eq $today
+    try {
+        $formats = @("MM/dd/yy", "M/d/yy", "MM/dd/yyyy", "yyyy-MM-dd")
+        $parsed = $null
+        $success = [datetime]::TryParseExact($_.OrderDate, $formats, $null, [System.Globalization.DateTimeStyles]::None, [ref]$parsed)
+        if ($success) {
+            $parsed.Date -eq $today
+        } else {
+            $false
+        }
+    } catch {
+        $false
+    }
 }
 
 # التحقق إذا فيه بيانات
