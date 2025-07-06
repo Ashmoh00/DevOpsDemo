@@ -1,21 +1,12 @@
 $csvPath = "./AdventureWorks_Sales_Data_2020.csv"
 
 # صيغة التاريخ MM/dd/yy
-$today = (Get-Date).Date
+$today = Get-Date
+$yesterday = $today.AddDays(-1)
 
 $filteredData = Import-Csv $csvPath | Where-Object {
-    try {
-        $formats = @("MM/dd/yy", "M/d/yy", "MM/dd/yyyy", "yyyy-MM-dd")
-        $parsed = $null
-        $success = [datetime]::TryParseExact($_.OrderDate, $formats, $null, [System.Globalization.DateTimeStyles]::None, [ref]$parsed)
-        if ($success) {
-            $parsed.Date -eq $today
-        } else {
-            $false
-        }
-    } catch {
-        $false
-    }
+    $orderDate = [datetime]::ParseExact($_.OrderDate, "MM/dd/yy", $null)
+    $orderDate -ge $yesterday -and $orderDate -le $today
 }
 
 # التحقق إذا فيه بيانات
