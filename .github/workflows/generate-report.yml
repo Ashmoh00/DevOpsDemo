@@ -41,11 +41,6 @@ jobs:
           from: ashjannnnnnn@gmail.com
           to: ashjan.aljbreen@gmail.com
           subject: "✅ Daily Sales PDF Report"
-          body: |
-            Hi Team,
+          body: "Hi Team, Please find attached the daily sales PDF report. Regards, DevOps Bot"
 
-            Please find attached the daily sales PDF report.
-            
-            Regards,
-            DevOps Bot
           attachments: report.pdf
