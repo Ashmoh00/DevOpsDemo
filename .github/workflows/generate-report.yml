@@ -1,58 +1,51 @@
 name: Generate Sales Report and Send Email
 
 on:
-  workflow_dispatch:
   schedule:
-    - cron: '0 6 * * *'  # يعمل كل يوم الساعة 6 صباحًا UTC (عدّل الوقت حسب حاجتك)
+    - cron: '0 5 * * *'  # مثال: تشغيل يوميًا الساعة 5 صباحًا UTC
+  workflow_dispatch:
 
 jobs:
-  build:
+  send_mail:
     runs-on: ubuntu-latest
 
     steps:
+      # ✅ اسحب الملفات من الريبو
       - name: Checkout repo
         uses: actions/checkout@v3
 
+      # ✅ استعراض الملفات للتحقق
       - name: List files (Debug)
         run: ls -la
 
-      - name: Install PowerShell
-        uses: microsoft/setup-powershell@v1
+      # ✅ تثبيت wkhtmltopdf
+      - name: Install wkhtmltopdf
+        run: sudo apt-get update && sudo apt-get install -y wkhtmltopdf
 
-      - name: Generate report
+      # ✅ توليد التقرير باستخدام سكربت PowerShell
+      - name: Generate PDF report
         run: pwsh ./generate-report.ps1
 
-      - name: Upload PDF report as artifact
+      # ✅ رفع التقرير الناتج كـ Artifact لو أردت
+      - name: Upload PDF report as Artifact
         uses: actions/upload-artifact@v4
         with:
           name: daily-sales-report
           path: report.pdf
 
-  send_mail:
-    needs: build
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Download PDF report artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: daily-sales-report
-
-      - name: List files (Debug)
-        run: ls -la
-
+      # ✅ إرسال البريد باستخدام SendGrid
       - name: Send email with SendGrid
         uses: peter-evans/sendgrid-action@v1
         with:
           sendgrid-api-key: ${{ secrets.SENDGRID_API_KEY }}
           from: ashjannnnnnn@gmail.com
-          to: Ashjan.aljbreen@gmail.com
-          subject: "✅ Daily Sales Report"
+          to: ashjan.aljbreen@gmail.com
+          subject: "✅ Daily Sales PDF Report"
           body: |
             Hi Team,
 
-            Please find attached the daily sales report.
-
+            Please find attached the daily sales PDF report.
+            
             Regards,
             DevOps Bot
           attachments: report.pdf
