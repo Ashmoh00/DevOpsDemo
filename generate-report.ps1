@@ -1,16 +1,14 @@
 $csvPath = "./AdventureWorks_Sales_Data_2020.csv"
-
-# صيغة التاريخ MM/dd/yy
-$today = Get-Date
-$yesterday = $today.AddDays(-1)
+$today = (Get-Date).Date
+$Culture = [System.Globalization.CultureInfo]::InvariantCulture
 
 $filteredData = Import-Csv $csvPath | Where-Object {
-    $orderDate = [datetime]::ParseExact($_.OrderDate, "MM/dd/yy", $null)
-    $orderDate -ge $yesterday -and $orderDate -le $today
+    $parsed = [datetime]::ParseExact($_.OrderDate, "MM/dd/yy", $Culture)
+    $parsed.Date -eq $today
 }
 
-# التحقق إذا فيه بيانات
-Write-Host "✔️ Found $($filteredData.Count) rows for $today"
+Write-Host "✅ عدد الصفوف: $($filteredData.Count)"
+
 
 # بناء HTML
 $htmlPath = "./report.html"
