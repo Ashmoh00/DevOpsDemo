@@ -1,11 +1,11 @@
-name: Generate PDF Report and Send Email
+name: Generate PDF Sales Report and Send Email
 
 on:
-  workflow_dispatch:  # تشغيل يدوي
+  workflow_dispatch:  # للتشغيل اليدوي من Actions
 
 jobs:
   build:
-    runs-on: ubuntu-latest  # Linux runner
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repo
@@ -22,10 +22,10 @@ jobs:
       - name: Install wkhtmltopdf
         run: sudo apt-get update && sudo apt-get install -y wkhtmltopdf
 
-      - name: Generate PDF Report
+      - name: Run Python script to generate PDF report
         run: python generate-report.py
 
-      - name: Upload PDF as artifact
+      - name: Upload PDF report as artifact
         uses: actions/upload-artifact@v4
         with:
           name: daily-sales-report
@@ -41,14 +41,18 @@ jobs:
         with:
           name: daily-sales-report
 
-      - name: Send PDF email with SendGrid
+      - name: Send email with SendGrid
         uses: peter-evans/sendgrid-action@v1
         with:
           sendgrid-api-key: ${{ secrets.SENDGRID_API_KEY }}
-          from: Ashjannnnnnn@gmail.com
-          to: Ashjan.aljbreen@gmail.com
+          from: ashjannnnnnn@gmail.com
+          to: ashjan.aljbreen@gmail.com
           subject: "✅ Daily Sales PDF Report"
           body: |
             Hi Team,
-            Please find attached the PDF sales report.
+
+            Please find attached the daily PDF sales report.
+
+            Regards,
+            DevOps Bot
           attachments: report.pdf
