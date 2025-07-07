@@ -39,3 +39,6 @@ $outputPdf = "./report.pdf"
 & wkhtmltopdf $htmlPath $outputPdf
 
 Write-Host "✅ PDF report generated: $outputPdf"
+
+Write-Host "🔍 عرض أول 5 صفوف من البيانات:"
+Import-Csv "./AdventureWorks_Sales_Data_2020.csv" | Select-Object -First 5
