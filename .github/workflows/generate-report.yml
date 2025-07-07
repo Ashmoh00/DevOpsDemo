@@ -26,12 +26,17 @@ jobs:
       - name: Generate PDF report
         run: pwsh ./generate-report.ps1
 
+      - name: Debug CSV Data
+        run: pwsh ./generate-report.ps1
+
+
       # ✅ رفع التقرير الناتج كـ Artifact لو أردت
       - name: Upload PDF report as Artifact
         uses: actions/upload-artifact@v4
         with:
           name: daily-sales-report
           path: report.pdf
+          
 
       # ✅ إرسال البريد باستخدام SendGrid
       - name: Send email with SendGrid
