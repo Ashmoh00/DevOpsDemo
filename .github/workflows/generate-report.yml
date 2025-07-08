@@ -2,7 +2,7 @@ name: Generate Sales Report and Send Email
 
 on:
   schedule:
-    - cron: '0 5 * * *'  # مثال: تشغيل يوميًا الساعة 5 صباحًا UTC
+    - cron: '0 5 * * *'
   workflow_dispatch:
 
 jobs:
@@ -10,39 +10,43 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # ✅ اسحب الملفات من الريبو
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      # ✅ عرض الملفات للتحقق
       - name: List files (Debug)
         run: ls -la
 
-      # ✅ تثبيت wkhtmltopdf
       - name: Install wkhtmltopdf
         run: sudo apt-get update && sudo apt-get install -y wkhtmltopdf
 
-      # ✅ توليد التقرير PDF
       - name: Generate PDF report
         run: pwsh ./generate-report.ps1
 
-      # ✅ رفع التقرير كـ Artifact لو احتجت الاحتفاظ به
       - name: Upload PDF report as Artifact
         uses: actions/upload-artifact@v4
         with:
           name: daily-sales-report
           path: report.pdf
 
-      # ✅ إرسال التقرير عبر البريد باستخدام SendGrid
-      - name: Send email with SendGrid
-        uses: peter-evans/sendgrid-action@v1
-        with:
-          sendgrid-api-key: ${{ secrets.SENDGRID_API_KEY }}
-          from: ashjannnnnnn@gmail.com
-          to: ashjan.aljbreen@gmail.com
-          subject: "✅ Daily Sales PDF Report"
-          body: |
-            <p>Hi Team,</p>
-            <p>Please find attached the daily sales PDF report.</p>
-            <p>Regards,<br>DevOps Bot</p>
-          attachments: report.pdf
+      - name: Send PDF via SendGrid
+        run: |
+          curl --request POST \
+          --url https://api.sendgrid.com/v3/mail/send \
+          --header "Authorization: Bearer ${{ secrets.SENDGRID_API_KEY }}" \
+          --header "Content-Type: application/json" \
+          --data '{
+            "personalizations": [{
+              "to": [{ "email": "ashjan.aljbreen@gmail.com" }],
+              "subject": "✅ Daily Sales PDF Report"
+            }],
+            "from": { "email": "ashjannnnnnn@gmail.com" },
+            "content": [{
+              "type": "text/plain",
+              "value": "Hi Team,\n\nPlease find attached the daily sales PDF report.\n\nRegards,\nDevOps Bot"
+            }],
+            "attachments": [{
+              "content": "'"$( base64 -w 0 report.pdf )"'",
+              "type": "application/pdf",
+              "filename": "report.pdf"
+            }]
+          }'
