@@ -1,0 +1,18 @@
+name: Test CSV Read
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test_read_csv:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: List files to debug
+        run: ls -la
+
+      - name: Read CSV with PowerShell
+        run: pwsh ./debug-csv.ps1
