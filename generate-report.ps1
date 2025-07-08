@@ -1,21 +1,12 @@
-# تعيين مسار الملف CSV
 $csvPath = "./AdventureWorks_Sales_Data_2020.csv"
+$today = Get-Date -Format "MM/dd"
 
-# التاريخ اليوم بدون وقت
-$today = (Get-Date).Date
-
-# إعداد الثقافة للـ Parsing
-$Culture = [System.Globalization.CultureInfo]::InvariantCulture
-
-# قراءة البيانات وتصفية حسب التاريخ
 $filteredData = Import-Csv $csvPath | Where-Object {
-    $parsed = [datetime]::ParseExact($_.OrderDate, "MM/dd/yy", $Culture)
-    $parsed.Date -eq $today
+  $_.OrderDate.StartsWith($today)
 }
 
-Write-Host "✅ عدد الصفوف المطابقة: $($filteredData.Count)"
+Write-Host "✅ عدد الصفوف: $($filteredData.Count)"
 
-# إنشاء HTML مؤقت
 $htmlPath = "./report.html"
 $htmlContent = @"
 <html>
@@ -28,23 +19,14 @@ $htmlContent = @"
 "@
 
 foreach ($row in $filteredData) {
-    $htmlContent += "<tr><td>$($row.OrderDate)</td><td>$($row.OrderNumber)</td><td>$($row.ProductKey)</td><td>$($row.OrderQuantity)</td></tr>`n"
+  $htmlContent += "<tr><td>$($row.OrderDate)</td><td>$($row.OrderNumber)</td><td>$($row.ProductKey)</td><td>$($row.OrderQuantity)</td></tr>`n"
 }
 
-$htmlContent += @"
-  </table>
-</body>
-</html>
-"@
+$htmlContent += "</table></body></html>"
 
 Set-Content -Path $htmlPath -Value $htmlContent
 
-# تحويل HTML إلى PDF
 $outputPdf = "./report.pdf"
 & wkhtmltopdf $htmlPath $outputPdf
 
 Write-Host "✅ PDF report generated: $outputPdf"
-
-# Debug: عرض أول 5 أسطر من الملف
-Write-Host "🔍 عرض أول 5 صفوف من الملف CSV:"
-Import-Csv $csvPath | Select-Object -First 5
