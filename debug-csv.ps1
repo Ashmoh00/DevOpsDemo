@@ -1,16 +1,38 @@
-# تأكد من المسار صح
-$csvPath = "./AdventureWorks_Sales_Data_2020.csv"
+# ============================================
+# توليد تقرير HTML بسيط
+# ============================================
 
-# صيغة اليوم والشهر فقط
-$today = Get-Date -Format "MM/dd"
+$htmlPath = "./report.html"
 
-# جرب فلترة التواريخ التي تبدأ بـ اليوم والشهر
-$filteredData = Import-Csv $csvPath | Where-Object {
-    $_.OrderDate.StartsWith($today)
+$htmlContent = @"
+<html>
+<head><title>Test Report</title></head>
+<body>
+  <h1>✅ Daily Report</h1>
+  <p>Date: $today</p>
+  <table border='1'>
+    <tr>
+      <th>OrderDate</th>
+      <th>OrderNumber</th>
+      <th>ProductKey</th>
+      <th>OrderQuantity</th>
+    </tr>
+"@
+
+foreach ($row in $filteredData) {
+    $htmlContent += "<tr>
+      <td>$($row.OrderDate)</td>
+      <td>$($row.OrderNumber)</td>
+      <td>$($row.ProductKey)</td>
+      <td>$($row.OrderQuantity)</td>
+    </tr>`n"
 }
 
-Write-Host "✅ التاريخ المستخدم: $today"
-Write-Host "✅ عدد الصفوف المطابقة: $($filteredData.Count)"
+$htmlContent += @"
+  </table>
+</body>
+</html>
+"@
 
-# اطبع أول 5 صفوف كاختبار
-$filteredData | Select-Object -First 5 | Format-Table
+Set-Content -Path $htmlPath -Value $htmlContent
+Write-Host "✅ HTML report generated: $htmlPath"
