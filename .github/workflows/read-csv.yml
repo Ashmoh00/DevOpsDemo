@@ -17,6 +17,11 @@ jobs:
       - name: Generate HTML report
         run: pwsh ./debug-csv.ps1
 
+        
+      - name: Check generated file
+        run: cat ./report.html
+
+
       - name: Upload HTML Artifact
         uses: actions/upload-artifact@v4
         with:
