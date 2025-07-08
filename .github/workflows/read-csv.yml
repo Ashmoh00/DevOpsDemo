@@ -14,5 +14,11 @@ jobs:
       - name: List files to debug
         run: ls -la
 
-      - name: Read CSV with PowerShell
+      - name: Generate HTML report
         run: pwsh ./debug-csv.ps1
+
+      - name: Upload HTML Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: html-report
+          path: report.html
