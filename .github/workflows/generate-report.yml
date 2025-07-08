@@ -14,7 +14,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      # ✅ استعراض الملفات للتحقق
+      # ✅ عرض الملفات للتحقق
       - name: List files (Debug)
         run: ls -la
 
@@ -22,23 +22,18 @@ jobs:
       - name: Install wkhtmltopdf
         run: sudo apt-get update && sudo apt-get install -y wkhtmltopdf
 
-      # ✅ توليد التقرير باستخدام سكربت PowerShell
+      # ✅ توليد التقرير PDF
       - name: Generate PDF report
         run: pwsh ./generate-report.ps1
 
-      - name: Debug CSV Data
-        run: pwsh ./generate-report.ps1
-
-
-      # ✅ رفع التقرير الناتج كـ Artifact لو أردت
+      # ✅ رفع التقرير كـ Artifact لو احتجت الاحتفاظ به
       - name: Upload PDF report as Artifact
         uses: actions/upload-artifact@v4
         with:
           name: daily-sales-report
           path: report.pdf
-          
 
-      # ✅ إرسال البريد باستخدام SendGrid
+      # ✅ إرسال التقرير عبر البريد باستخدام SendGrid
       - name: Send email with SendGrid
         uses: peter-evans/sendgrid-action@v1
         with:
@@ -47,9 +42,7 @@ jobs:
           to: ashjan.aljbreen@gmail.com
           subject: "✅ Daily Sales PDF Report"
           body: |
-              <p>Hi Team,</p>
-              <p>Please find attached the daily sales PDF report.</p>
-              <p>Regards,<br>DevOps Bot</p>
-
-
+            <p>Hi Team,</p>
+            <p>Please find attached the daily sales PDF report.</p>
+            <p>Regards,<br>DevOps Bot</p>
           attachments: report.pdf
