@@ -1,0 +1,19 @@
+name: Deploy to IIS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: self-hosted  # لأنك شغلت runner على جهازك
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Copy files to IIS folder
+        run: |
+          Remove-Item -Recurse -Force 'C:\inetpub\rasan\*'
+          Copy-Item -Path .\* -Destination 'C:\inetpub\rasan\' -Recurse -Force
+        shell: pwsh
