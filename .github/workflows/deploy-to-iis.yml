@@ -1,19 +1,24 @@
-name: Deploy to IIS
+name: Deploy to IIS with Rollback
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:  # يمكنك تشغيله يدويًا من GitHub
 
 jobs:
   deploy:
-    runs-on: self-hosted  # لأنك شغلت runner على جهازك
+    runs-on: [self-hosted, windows]
+
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Copy files to IIS folder
-        run: |
-          Remove-Item -Recurse -Force 'C:\inetpub\rasan\*'
-          Copy-Item -Path .\* -Destination 'C:\inetpub\rasan\' -Recurse -Force
-        shell: pwsh
+      - name: List files (Debug)
+        run: dir
+
+      - name: Run deployment script
+        run: powershell -File ./deploy/run.ps1
+
+      - name: Upload latest backup (optional)
+        uses: actions/upload-artifact@v4
+        with:
+          name: iis-backup
+          path: C:\backup
