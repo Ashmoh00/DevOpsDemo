@@ -1,20 +1,17 @@
 name: Deploy to IIS with Rollback
 
 on:
-  workflow_dispatch:  # يمكنك تشغيله يدويًا من GitHub
+  workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: [self-hosted, windows]
 
     steps:
-      - name: Checkout repository
+      - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: List files (Debug)
-        run: dir
-
-      - name: Run deployment script
+      - name: Run Deployment Script
         run: powershell -File ./deploy/run.ps1
 
       - name: Upload latest backup (optional)
