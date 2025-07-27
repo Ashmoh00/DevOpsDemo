@@ -1,21 +1,18 @@
-name: Deploy to IIS with Rollback
+name: Deploy Website to IIS
 
 on:
+  push:
+    branches:
+      - main   # كل تحديث على main يعمل ديبلويمنت
   workflow_dispatch:
 
 jobs:
   deploy:
-    runs-on: [self-hosted, windows]
+    runs-on: self-hosted   # السيرفر اللي عليه IIS والـ runner
 
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Run Deployment Script
-        run: powershell -File ./deploy/run.ps1
-
-      - name: Upload latest backup (optional)
-        uses: actions/upload-artifact@v4
-        with:
-          name: iis-backup
-          path: C:\backup
+      - name: Run deployment script
+        run: pwsh ./deploy/run.ps1
