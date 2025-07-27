@@ -1,4 +1,4 @@
-$source = "C:\actions-runner\_work\DevOpsDemo\DevOpsDemo"
+$source = "C:\actions-runner\_work\DevOpsDemo\DevOpsDemo\site"  
 $destination = "C:\inetpub\rasan"
 $backupDir = "C:\backup"
 $timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
@@ -9,6 +9,6 @@ New-Item -ItemType Directory -Path $backupPath -Force | Out-Null
 Copy-Item -Path "$destination\*" -Destination $backupPath -Recurse -Force
 Write-Host "✅ Backup created: $backupPath"
 
-# نشر الملفات الجديدة
+# نشر الملفات الجديدة فقط من مجلد الموقع
 Copy-Item -Path "$source\*" -Destination $destination -Recurse -Force
 Write-Host "🚀 Deployment successful from GitHub repo to IIS"
