@@ -13,27 +13,31 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Setup PowerShell
-      uses: actions/setup-powershell@v2
 
     - name: Run Deployment Script
       id: deploy-step
       shell: pwsh
       run: |
         try {
-          Write-Host "Starting backup and deployment..."
-          .\deploy\run.ps1
-          Write-Host "Deployment completed successfully ✅"
+          Write-Host "🔹 Starting backup and deployment..."
+          # Run the deployment script and capture output
+          pwsh -File .\deploy\run.ps1
+      
+          Write-Host "✅ Deployment completed successfully"
           echo "DEPLOY_STATUS=success" | Out-File -FilePath $env:GITHUB_ENV -Append
           echo "DEPLOY_MESSAGE=Deployment completed successfully" | Out-File -FilePath $env:GITHUB_ENV -Append
         }
         catch {
-          Write-Host "Deployment failed ❌. Rolling back..."
-          .\deploy\rollback.ps1
+          Write-Host "❌ Deployment failed. Rolling back..."
+          # Run the rollback script
+          pwsh -File .\deploy\rollback.ps1
+      
+          # Save the failure message for the email
           echo "DEPLOY_STATUS=failure" | Out-File -FilePath $env:GITHUB_ENV -Append
           echo "DEPLOY_MESSAGE=Deployment failed: $($_.Exception.Message)" | Out-File -FilePath $env:GITHUB_ENV -Append
           exit 1
         }
+
 
     - name: Send Email Notification
       if: always()   # Always run this step whether success or failure
@@ -44,8 +48,8 @@ jobs:
         username: ${{ secrets.EMAIL_USERNAME }}
         password: ${{ secrets.EMAIL_PASSWORD }}
         subject: "RASAN Website Deployment Status: ${{ env.DEPLOY_STATUS }}"
-        to: "your-email@domain.com"
-        from: "rasan@company.com"
+        to: "ashjan.aljbreen@gmail.com"
+        from: "ashjannnnnnn@gmail.com"
         body: |
           Deployment Status: **${{ env.DEPLOY_STATUS }}**
 
