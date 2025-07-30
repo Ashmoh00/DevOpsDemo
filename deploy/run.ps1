@@ -1,14 +1,25 @@
-$source = "C:\actions-runner\_work\DevOpsDemo\DevOpsDemo\site"
-$destination = "C:\inetpub\rasan"
-$backupDir = "C:\backup"
+# تحديد المسارات
+$webPath = "C:\inetpub\rasan"
+$backupPath = "C:\backup"
 $timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
-$backupPath = Join-Path $backupDir "rasan_$timestamp"
+$backupFolder = Join-Path $backupPath "rasan_$timestamp"
 
-# إنشاء النسخة الاحتياطية
-New-Item -ItemType Directory -Path $backupPath -Force | Out-Null
-Copy-Item -Path "$destination\*" -Destination $backupPath -Recurse -Force
-Write-Host "✅ Backup created: $backupPath"
+Write-Host "🔹 بدء النسخ الاحتياطي..."
 
-# نسخ الملفات الجديدة من مجلد الموقع
-Copy-Item -Path "$source\*" -Destination $destination -Recurse -Force
-Write-Host "🚀 Deployment successful"
+# إنشاء نسخة احتياطية
+if (!(Test-Path $backupPath)) {
+    New-Item -ItemType Directory -Path $backupPath
+}
+
+Copy-Item $webPath $backupFolder -Recurse -Force
+Write-Host "✅ تم النسخ الاحتياطي إلى: $backupFolder"
+
+Write-Host "🔹 نشر النسخة الجديدة..."
+
+# نسخ الملفات الجديدة إلى موقع IIS
+Copy-Item ".\site\*" $webPath -Recurse -Force
+
+Write-Host "🔄 إعادة تشغيل IIS..."
+iisreset
+
+Write-Host "✅ تم النشر بنجاح"
