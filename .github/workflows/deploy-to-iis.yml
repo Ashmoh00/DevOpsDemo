@@ -3,7 +3,7 @@ name: Automatic IIS Deployment with Backup and Rollback
 on:
   push:
     branches:
-      - site
+      - main
 
 jobs:
   deploy:
