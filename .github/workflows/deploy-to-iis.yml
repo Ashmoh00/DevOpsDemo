@@ -40,21 +40,22 @@ jobs:
 
 
     - name: Send Email Notification
-      if: always()   # Always run this step whether success or failure
+      if: always()
       uses: dawidd6/action-send-mail@v3
       with:
-        server_address: smtp.gmail.com
-        server_port: 465
-        username: ${{ secrets.EMAIL_USERNAME }}
-        password: ${{ secrets.EMAIL_PASSWORD }}
+        server_address: smtp.sendgrid.net
+        server_port: 587
+        username: apikey
+        password: ${{ secrets.SENDGRID_API_KEY }}
         subject: "RASAN Website Deployment Status: ${{ env.DEPLOY_STATUS }}"
         to: "ashjan.aljbreen@gmail.com"
-        from: "ashjannnnnnn@gmail.com"
+        from: "Ashjannnnnnn@gmail.com"
         body: |
           Deployment Status: **${{ env.DEPLOY_STATUS }}**
 
           Details:
           ${{ env.DEPLOY_MESSAGE }}
+
 
           - If status is "success": The site was deployed successfully.
           - If status is "failure": The deployment failed and the last backup was restored.
