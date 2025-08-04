@@ -1,0 +1,30 @@
+name: Email Notification
+
+on:
+  workflow_dispatch:
+    inputs:
+      status:
+        required: true
+      message:
+        required: true
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Send Email Notification
+      uses: dawidd6/action-send-mail@v3
+      with:
+        server_address: smtp.sendgrid.net
+        server_port: 587
+        username: apikey
+        password: ${{ secrets.SENDGRID_API_KEY }}
+        subject: "RASAN Website Deployment Status: ${{ github.event.inputs.status }}"
+        to: "ashjan.aljbreen@gmail.com"
+        from: "ashjannnnnnn@gmail.com"
+        body: |
+          Deployment Status: **${{ github.event.inputs.status }}**
+
+          Details:
+          ${{ github.event.inputs.message }}
