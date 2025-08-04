@@ -1,0 +1,42 @@
+name: Automatic IIS Deployment
+
+on:
+  push:
+    branches:
+      - site
+
+jobs:
+  deploy:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Run Deployment Script
+      id: deploy-step
+      shell: pwsh
+      run: |
+        try {
+          Write-Host "🔹 Starting backup and deployment..."
+          pwsh -File .\deploy\run.ps1
+          
+          echo "DEPLOY_STATUS=success" | Out-File -FilePath $env:GITHUB_ENV -Append
+          echo "DEPLOY_MESSAGE=Deployment completed successfully" | Out-File -FilePath $env:GITHUB_ENV -Append
+        }
+        catch {
+          echo "DEPLOY_STATUS=failure" | Out-File -FilePath $env:GITHUB_ENV -Append
+          echo "DEPLOY_MESSAGE=Deployment failed: $($_.Exception.Message)" | Out-File -FilePath $env:GITHUB_ENV -Append
+          exit 1
+        }
+
+    - name: Trigger Notification Workflow
+      if: always()
+      uses: benc-uk/workflow-dispatch@v1
+      with:
+        workflow: notify.yml
+        token: ${{ secrets.GITHUB_TOKEN }}
+        ref: site
+        inputs: |
+          status=${{ env.DEPLOY_STATUS }}
+          message=${{ env.DEPLOY_MESSAGE }}
