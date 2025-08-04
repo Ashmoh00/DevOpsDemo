@@ -1,0 +1,16 @@
+name: Manual Rollback
+
+on:
+  workflow_dispatch
+
+jobs:
+  rollback:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Run Rollback Script
+      shell: pwsh
+      run: pwsh -File .\deploy\rollback.ps1
