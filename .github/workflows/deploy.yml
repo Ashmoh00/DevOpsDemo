@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - site
+  workflow_dispatch:  # هذا يسمح بتشغيله يدويًا
 
 jobs:
   deploy:
