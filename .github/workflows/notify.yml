@@ -4,8 +4,10 @@ on:
   workflow_dispatch:
     inputs:
       status:
+        description: "Deployment status (success/failure)"
         required: true
       message:
+        description: "Detailed message about the deployment"
         required: true
 
 jobs:
@@ -13,18 +15,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Send Email Notification
-      uses: dawidd6/action-send-mail@v3
-      with:
-        server_address: smtp.sendgrid.net
-        server_port: 587
-        username: apikey
-        password: ${{ secrets.SENDGRID_API_KEY }}
-        subject: "RASAN Website Deployment Status: ${{ github.event.inputs.status }}"
-        to: "ashjan.aljbreen@gmail.com"
-        from: "ashjannnnnnn@gmail.com"
-        body: |
-          Deployment Status: **${{ github.event.inputs.status }}**
+      - name: Send Email Notification via SendGrid
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.sendgrid.net
+          server_port: 587
+          username: apikey
+          password: ${{ secrets.SENDGRID_API_KEY }}
+          subject: "📣 RASAN Deployment Status: ${{ github.event.inputs.status }}"
+          to: "ashjan.aljbreen@gmail.com"
+          from: "ashjannnnnnn@gmail.com"
+          body: |
+            Hello,
 
-          Details:
-          ${{ github.event.inputs.message }}
+            🚀 Deployment Status: **${{ github.event.inputs.status }}**
+
+            📝 Details:
+            ${{ github.event.inputs.message }}
+
+            -- 
+            GitHub Actions - Automated Notification
