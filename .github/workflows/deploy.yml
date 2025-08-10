@@ -1,43 +1,23 @@
-name: Automatic IIS Deployment
+name: Simple IIS Deployment
 
 on:
   push:
     branches:
-      - site
-  workflow_dispatch:  # هذا يسمح بتشغيله يدويًا
+      - site   # يشتغل إذا عملت push على برانش site
+  workflow_dispatch: {}   # للتشغيل اليدوي من GitHub
 
 jobs:
   deploy:
-    runs-on: windows-latest
+    runs-on: self-hosted   # يشغل على الـ runner في جهازك
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Run Deployment Script
-      id: deploy-step
-      shell: pwsh
-      run: |
-        try {
-          Write-Host "🔹 Starting backup and deployment..."
-          pwsh -File .\deploy\run.ps1
-          
-          echo "DEPLOY_STATUS=success" | Out-File -FilePath $env:GITHUB_ENV -Append
-          echo "DEPLOY_MESSAGE=Deployment completed successfully" | Out-File -FilePath $env:GITHUB_ENV -Append
-        }
-        catch {
-          echo "DEPLOY_STATUS=failure" | Out-File -FilePath $env:GITHUB_ENV -Append
-          echo "DEPLOY_MESSAGE=Deployment failed: $($_.Exception.Message)" | Out-File -FilePath $env:GITHUB_ENV -Append
-          exit 1
-        }
+      - name: Set PowerShell policy (temporary for this job)
+        shell: pwsh
+        run: Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 
-    - name: Trigger Notification Workflow
-      if: always()
-      uses: benc-uk/workflow-dispatch@v1
-      with:
-        workflow: notify.yml
-        token: ${{ secrets.GITHUB_TOKEN }}
-        ref: site
-        inputs: |
-          status=${{ env.DEPLOY_STATUS }}
-          message=${{ env.DEPLOY_MESSAGE }}
+      - name: Run deployment script
+        shell: pwsh
+        run: ./deploy/run.ps1
