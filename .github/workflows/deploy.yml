@@ -2,7 +2,8 @@ name: Simple IIS Deployment
 
 on:
   push:
-    branches: [main, site]
+    branches: 
+     - site
   workflow_dispatch: {}   # للتشغيل اليدوي من GitHub
 
 jobs:
